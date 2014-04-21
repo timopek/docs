@@ -82,7 +82,7 @@ Disable the iptables
 Get the file in this path, conf_files/realserver/etc/init.d/lvsrs
 It need to change the value of the VIP in this file.
 
-3. Start the lvs rease server.
+3. Start the lvs rease server,
 
     [openfire 1] # /etc/init.d/lvsrs start
     [openfire 2] # /etc/init.d/lvsrs start
@@ -101,3 +101,5 @@ Check the LVS status
     -> dhcp-129-140.nay.redhat.com: Route   2      0          0
 
 
+Reference:
+http://www.cnblogs.com/mchina/archive/2012/05/23/2514728.html

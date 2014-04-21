@@ -20,13 +20,13 @@ Topology
 LVS master server
 -----------------
 
-1. Disable the iptables
+Disable the iptables
 
 
     [lvs-master] # iptables -F
 
 
-2. Enable the IP forwarding
+Enable the IP forwarding
    
 
     [lvs-master] # vim /etc/sysctl.conf
@@ -36,20 +36,20 @@ LVS master server
     [lvs-master] # sysctl -p
 
 
-3. Install LVS, keepalived packages
+Install LVS, keepalived packages
    
 
     [lvs-master] # yum install keepalived ipvsadm
 
 
-4. Configue keepalived
+Configue keepalived
 Get the file in this path, conf_files/master/etc/keepalived 
    
 
     [lvs-master] # vim /etc/keepalived/keepalived.conf
 
 
-5. Start the keepalived service
+Start the keepalived service
 
 
     [lvs-master] # service keepalived start

@@ -27,6 +27,7 @@ LVS master server
 2. Enable the IP forwarding
    
     [lvs-master] # vim /etc/sysctl.conf
+
     net.ipv4.ip_forward = 1
     
     [lvs-master] # sysctl -p
@@ -51,7 +52,7 @@ Real Server
 
 1. Install, configure and start up the openfire.
 
-Install packages,
+ * Install packages,
 
     [openfire 1] # yum install mysql-server
     [openfire 1] # service mysqld start
@@ -59,7 +60,7 @@ Install packages,
     [openfire 1] # yum install openfire-3.9.1-1.i386.rpm
     [openfire 1] # yum install mysql-connector-java libldb.i686 libldb-devel.i686
 
-Create the mysql openfire and grant the user openfire,
+ * Create the mysql openfire and grant the user openfire,
 
     [openfire 1] # mysql -uroot -p
     mysql> grant all on openfire.* to openfire@'%';
@@ -69,12 +70,12 @@ Create the mysql openfire and grant the user openfire,
     [openfire 1] # cd /opt/openfire/resources/database
     [openfire 1] # cat openfire_mysql.sql | mysql -uroot openfire;
     
-Start the service opefire,
+ * Start the service opefire,
 
     [openfire 1] # service openfire start
     [openfire 1] # chkconfig openfire on
 
-Disable the iptables
+ * Disable the iptables
    
     [openfire 1] # iptables -F
    
@@ -83,7 +84,7 @@ Get the file in this path, conf_files/realserver/etc/init.d/lvsrs
 It need to change the value of the VIP in this file.
 
 3. Start the lvs rease server,
-
+    
     [openfire 1] # /etc/init.d/lvsrs start
     [openfire 2] # /etc/init.d/lvsrs start
 

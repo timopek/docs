@@ -43,7 +43,8 @@ Install LVS, keepalived packages
 
 
 Configue keepalived
-Get the file in this path, conf_files/master/etc/keepalived 
+
+Get the file in this path, conf_files/master/etc/keepalived,
    
 
     [lvs-master] # vim /etc/keepalived/keepalived.conf
@@ -98,7 +99,9 @@ Install, configure and start up the openfire.
 
    
 Configure the real server script, /etc/init.d/lvsrs.
-Get the file in this path, conf_files/realserver/etc/init.d/lvsrs
+
+Get the file in this path, conf_files/realserver/etc/init.d/lvsrs ,
+
 It need to change the value of the VIP in this file.
 
 Start the lvs rease server,

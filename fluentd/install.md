@@ -52,10 +52,10 @@ write the conf to /opt/conf.d/syslog.conf
           type elasticsearch
           logstash_format true
           flush_interval 10s
-          host 223.202.120.59 # elasticsearch host
+          host 127.0.0.1 # elasticsearch host
           port 9200 
           index_name fluentd_easemob  
-          type_name ebs-ali-beijing-3 #change as the hostname
+          type_name hostname #change as the hostname
        </store>
      </match>
 

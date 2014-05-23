@@ -16,8 +16,8 @@ Install fluentd
 ---------------
 
     # gem install fluentd
-    # fluentd --setup /opt/fluent
-    # chown -R easemob.easemob /opt/fluent
+    # fluentd --setup /opt/fluentd
+    # chown -R easemob.easemob /opt/fluentd
     Use taobao gem source
     # gem sources --remove https://rubygems.org/
     # gem sources -a https://ruby.taobao.org/
@@ -25,6 +25,23 @@ Install fluentd
     Create the log dir
     # mkdir /var/easemob/fluentd
     # chown -R easemob.easemob /var/easemob/fluentd
+
+Configure fluentd in supervisor
+-------------------------------
+
+    [program:fluentd]
+    command=/usr/local/bin/fluentd -c /opt/fluentd/fluent.conf
+    process_name=fluentd
+    user=easemob
+    autostart=true
+    autorestart=true
+    startsecs=10
+    startretries=999
+    log_stdout=true
+    log_stderr=true
+    logfile=/var/easemob/fluentd/fluentd.out
+    logfile_maxbytes=20MB
+    logfile_backups=10
 
 Syslog to Elasticsearch
 -----------------------
@@ -61,7 +78,7 @@ write the conf to /opt/conf.d/syslog.conf
 
 start the fluentd
 
-    # fluentd -c /opt/fluent/fluent.conf
+    # fluentd -c /opt/fluentd/fluent.conf
 
 
 Nginx to Elasticsearch

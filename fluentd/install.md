@@ -25,6 +25,8 @@ Install fluentd
     Create the log dir
     # mkdir /var/easemob/fluentd
     # chown -R easemob.easemob /var/easemob/fluentd
+    # cd /var/easemob/fluentd
+    # mkdir cassandra ejabberd kafka nginx tomcat
 
 Configure fluentd in supervisor
 -------------------------------
@@ -48,6 +50,7 @@ Syslog to Elasticsearch
 
 http://docs.fluentd.org/recipe/syslog/elasticsearch
 
+    # sudo yum install libcurl libcurl-devel -y
     # gem install fluent-plugin-elasticsearch
     
 Add the line "include conf.d/*.conf" into file /opt/fluent/fluent.conf
@@ -83,4 +86,39 @@ start the fluentd
 
 Nginx to Elasticsearch
 -----------------------
+
+
+Tomcat to Elasticsearch
+-----------------------
+
+Log Filter
+----------
+    
+    # sudo yum install libcurl libcurl-devel -y
+    # gem install fluent-plugin-record-modifier
+
+
+1. https://github.com/repeatedly/fluent-plugin-record-modifier
+
+    <match filter.nginx>
+        type record_modifier
+        tag filter
+        hostname ebs-ali-beijing-3
+    </match>
+    <match filter>
+        type copy
+        <store>
+           type file
+           path /var/easemob/fluentd/fluentd-nginx.log
+        </store>
+        <store>
+            type elasticsearch
+            logstash_format true
+            host 223.202.120.59
+            port 9200
+            index_name fluentd_easemob
+            type_name nginx
+            flush_interval 10s
+        </store>
+    </match>
 

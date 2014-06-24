@@ -1,6 +1,12 @@
 Redis cluster
 =============
 
+Ref
+----
+http://www.redis.cn/topics/cluster-tutorial.html
+
+http://www.redis.cn/topics/cluster-spec.html
+
 Nodes
 -----
 

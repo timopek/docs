@@ -122,3 +122,8 @@ Log Filter
         </store>
     </match>
 
+fluent-plugin-grep
+-------------------
+
+    $ sudo gem install fluent-plugin-grep
+

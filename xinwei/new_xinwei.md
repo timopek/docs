@@ -203,10 +203,17 @@
 
 
 
-###1.5 hosts###
+###1.9 设置域名###
+
+给服务器设置域名，编辑文件/etc/sysconfig/network，设置HOSTNAME=$hostname，然后运行命令`hostname $hostname`, 自行将$hostname替换为实际域名.
+
+编辑文件/etc/hosts, 追加一行，自行将$IP和$HOSTNAME替换为实际IP地址和域名.
+
+    $IP $HOSTNAME
+
 
 2. 安装Cassandra
------------------
+-----------------------
 
 
 3. 安装Usergrid

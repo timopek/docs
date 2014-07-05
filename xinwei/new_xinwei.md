@@ -3,7 +3,7 @@
 
 ###1.1 安装需要的软件包###
 
-####epel####
+####安装epel源####
 
     yum install http://dl.fedoraproject.org/pub/epel/6/x86_64/epel-release-6-8.noarch.rpm -y
 
@@ -202,7 +202,6 @@
     alias supervisorctl='supervisorctl -c /home/easemob/apps/config/supervisor/supervisord.conf'
 
 
-
 ###1.9 设置域名###
 
 给服务器设置域名，编辑文件/etc/sysconfig/network，设置HOSTNAME=$hostname，然后运行命令`hostname $hostname`, 自行将$hostname替换为实际域名.
@@ -221,7 +220,7 @@
 
 
 4. 安装Cloudcode
------------------
+------------------------
 
 
 5. 安装Nginx
@@ -235,12 +234,84 @@
 7. 安装Redis
 -----------------
 
+8. 安装Ejabberd
+----------------------
 
-8. 按装后的初始化工作
------------------
+    1)下载[ejabberd-13.12](http://www.process-one.net/downloads/ejabberd/13.12/ejabberd-13.12-linux-x86_64-installer.run)安装文件到/目录
+      # wget http://www.process-one.net/downloads/ejabberd/13.12/ejabberd-13.12-linux-x86_64-installer.run -p /tmp
+    2)安装
+      # cd /tmp
+      # chmod a+x ejabberd-13.12-linux-x86_64-installer.run
+      # ./ejabberd-13.12-linux-x86_64-installer.run
+      select language: 2-English(default)
+      Installation Directory : /home/easemob/apps/opt/ejabberd-13.12
+      domain: 这个设置成域名的域
+      admin: admin
+      password: thepushbox
+      Cluster: no
+      
+    3)安装完第一台后，把文件~/.erlang.cookie复制到另外机器上，然后安装ejabberd。（单机安装这一步不需要）
+    4)在服务器上修改配置文件/home/easemob/apps/opt/ejabberd-13.12/conf/ejabberd.cfg
+      修改配置文件
+      
+      **conf/ejabberd.conf**
+      加入下面两行，
+      """
+      {auth_method, external}.
+      {extauth_program, "/home/easemob/apps/opt/ejabberd-13.12/scripts/external_auth.py"}.
+      """
+      还有在modules这个位置像下面这样加入mod_send_ack和mod_ping，
+      {modules,
+      [
+        {mod_adhoc,    []},
+        {mod_send_ack, []},
+        {mod_ping, [ ]},
+      """
+        
+      **conf/inetrc**
+      修改host的那一行，用实际的IP和域名替换，注意IP地址是用,分割的。
+      {host,{192,168,1,13}, ["static-1-13","localhost"]}.
+      
+      **bin/ejabberdctl**
+      修改下面这两行，用实际的IP和域名替换。
+      INET_DIST_INTERFACE="192.168.1.13"
+      ERLANG_NODE=ejabberd@static-1-13
+   
+    5)下载[easy_cluster.beam](http://www.easemob.com/downloads/ebin.zip)解压后复制到目录/home/easemob/apps/opt/ejabberd-13.12/lib/ejabberd-13.12/ebin/
+    6)在所有服务器上启动ejabberd, 启动后5222端口将被侦听
+      # /home/easemob/apps/opt/ejabberd-13.12/bin/ejabberdctl start
+    7)把所有服务器做成ejabberd集群，单机不需要做这个。
+      # /opt/ejabberd-13.12/bin/ejabberdctl debug
+      (ejabberd@static-1-13)1> easy_cluster:test_node('ejabberd@static-1-12').
+      server is reached.
+      ok
+      (ejabberd@static-1-13)2>  easy_cluster:join_as_master('ejabberd@static-1-12').
+      ok
+      两个ctrl+c退出ejabberd console.
 
 
-8. 功能验证
+9. 按装后的初始化工作
+-------------------------------
+
+a. 初始化数据库, 自行将localhost替换为域名
+    
+    # curl --user "webmaster:1234567890" http://localhost:8080/system/database/setup
+    {
+      "action" : "cassandra setup",
+      "status" : "ok",
+      "timestamp" : 1404545062339,
+      "duration" : 71
+    }
+    # curl --user "webmaster:1234567890" http://localhost:8080/system/superuser/setup
+    {
+       "action" : "superuser setup",
+       "status" : "ok",
+       "timestamp" : 1404545009469,
+       "duration" : 2
+    }
+    
+
+10. 功能验证
 -----------------
 
 
@@ -410,57 +481,6 @@ Nginx, php-fpm 和 upload配置如下：
     # /etc/init.d/nginx status
     # lsof -i :9092
 
-Ejabberd配置如下：
------------------------------------------
-
-192.168.1.12  内网主机名: static-1-12
-192.168.1.13  内网主机名: static-1-13
-192.168.1.15  内网主机名: static-1-15
-
-    1)下载[ejabberd-13.12](http://www.process-one.net/downloads/ejabberd/13.12/ejabberd-13.12-linux-x86_64-installer.run)安装文件到/opt目录
-    2)安装
-      # chmod a+x ejabberd-13.12-linux-x86_64-installer.run
-      # ./ejabberd-13.12-linux-x86_64-installer.run
-      language: 2-English
-      domain: ac2
-      admin: admin
-      password: thepushbox
-      Cluster: no
-    3)安装完第一台后，把文件/root/.erlang.cookie复制到另外两台机器上，然后安装ejabberd
-    4)在三台服务器上修改配置文件/opt/ejabberd/conf/ejabberd.cfg
-      找到“{hosts, ["ac2"]}.”
-      加入这一行引号内内容，
-      “{acl, admin, {user, "admin", "ac2"}}.”
-      修改配置文件
-      bin/ejabberdctl
-      conf/inetrc
-      conf/ejabberd.conf
-      
-      """
-      {auth_method, external}.
-      {extauth_program, "/home/easemob/apps/opt/ejabberd-13.12/scripts/external_auth.py"}.
-
-      .... 
-      
-      {modules,
-      [
-        {mod_adhoc,    []},
-        {mod_send_ack, []},
-        {mod_ping, [ ]},
-  
-      """
-      
-    5)下载[easy_cluster.beam](http://www.easemob.com/downloads/ebin.zip)解压后复制到目录/opt/ejabberd/lib/ejabberd-13.12/ebin
-    6)在三台服务器上启动ejabberd, 启动后5222端口将被侦听
-      # /opt/ejabberd-13.12/bin/ejabberdctl start
-    7)在192.168.1.13和192.168.1.15上进入ejabberd的debug模式, 把三台服务器做成ejabberd集群
-      # /opt/ejabberd-13.12/bin/ejabberdctl debug
-      (ejabberd@static-1-13)1> easy_cluster:test_node('ejabberd@static-1-12').
-      server is reached.
-      ok
-      (ejabberd@static-1-13)2>  easy_cluster:join_as_master('ejabberd@static-1-12').
-      ok
-      两个ctrl+c退出ejabberd console.
 
 负载均衡：
 -----------------------------------------

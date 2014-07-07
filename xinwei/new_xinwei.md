@@ -277,7 +277,7 @@
       INET_DIST_INTERFACE="192.168.1.13"
       ERLANG_NODE=ejabberd@static-1-13
    
-    5)下载[easy_cluster.beam](http://www.easemob.com/downloads/ebin.zip)解压后复制到目录/home/easemob/apps/opt/ejabberd-13.12/lib/ejabberd-13.12/ebin/
+    5)单机不需要做这个, 下载[easy_cluster.beam](http://www.easemob.com/downloads/ebin.zip)解压后复制到目录/home/easemob/apps/opt/ejabberd-13.12/lib/ejabberd-13.12/ebin/
     6)在所有服务器上启动ejabberd, 启动后5222端口将被侦听
       # /home/easemob/apps/opt/ejabberd-13.12/bin/ejabberdctl start
     7)把所有服务器做成ejabberd集群，单机不需要做这个。

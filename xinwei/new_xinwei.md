@@ -275,7 +275,7 @@
 
 2.5 配置supervisord管理cassandra服务
 
-写入配置文件/home/easemob/apps/data/supervisor,
+写入配置文件/home/easemob/apps/data/supervisor/cassandra.conf,
 
     [program:cassandra]
     command=/home/easemob/apps/opt/cassandra/bin/cassandra -f -p /home/easemob/apps/var/cassandra/cassandra.pid
@@ -294,8 +294,97 @@
 3. 安装Zookeeper
 -----------------
 
+3.1 创建目录
+
+    mkdir /home/easemob/apps/{data,var,log,config}/zookeeper -p
+    
+3.2 下载[zookeeper](http://mirrors.cnnic.cn/apache/zookeeper/zookeeper-3.4.6/zookeeper-3.4.6.tar.gz), 解压到目录/home/easemob/apps/opt, 并创建软链接，
+
+    ln -s /home/easemob/apps/opt/zookeeper-3.4.6 /home/easemob/apps/opt/zookeeper
+    chown -R easemob.easemob /home/easemob/apps/
+
+3.3 配置zookeeper
+
+复制文件/home/easemob/apps/zookeeper/conf/zoo_sample.cfg到/home/easemob/apps/config/zookeeper/zoo.cfg
+ - 替换"dataDir=/tmp/zookeeper"为"dataDir=/home/easemob/apps/data/zookeeper"
+
+复制文件/home/easemob/apps/zookeeper/conf/log4j.properties到/home/easemob/apps/config/zookeeper/log4j.properties
+
+复制文件/home/easemob/apps/zookeeper/conf/configuration.xsl到/home/easemob/apps/config/zookeeper/configuration.xsl
+
+新建文件/home/easemob/apps/data/zookeeper/myid，文件内容是"1"
+
+3.4 配置supervisord管理zookeeper
+
+写入配置文件/home/easemob/apps/data/supervisor/zookeeper.conf,
+
+    [program:zookeeper]
+    command=/home/easemob/apps/opt/zookeeper/bin/zkServer.sh start-foreground
+    user=easemob
+    autostart=true
+    autorestart=true
+    startsecs=10
+    startretries=999
+    log_stdout=true
+    log_stderr=true
+    logfile=/home/easemob/apps/log/zookeeper/zookeeper.out
+    logfile_maxbytes=20MB
+    logfile_backups=10
+    environment=JMXDISABLE="true",ZOOCFGDIR="/home/easemob/apps/config/zookeeper",ZOO_LOG_DIR="/home/easemob/apps/log/zookeeper",ZOOPIDFILE="/home/easemob/apps/var/zookeeper/zookeeper.pid"
+
+
 4. 安装Nginx
 -----------------
+
+4.1 创建目录
+
+    mkdir /home/easemob/apps/{data,var,log,config}/nginx -p
+    mkdir /home/easemob/apps/config/nginx/conf.d -p
+    chown -R easemob.easemob /home/easemob/apps/
+
+4.2 安装依赖
+
+    yum install git pcre pcre-devel pcre-static openssl zlib zlib-devel gzip snappy -y
+
+4.3 安装nginx
+
+下载[nginx-1.7.0](http://www.easemob.com/downloads/install/nginx-1.7.0.tar.gz)，并解压到目录/tmp
+
+安装运行nginx
+    
+    cd /tmp/nginx-1.7.0
+    ./configure --with-http_ssl_module --with-http_realip_module \
+    --with-http_addition_module --with-http_sub_module \
+    --with-http_dav_module --with-http_flv_module --with-http_mp4_module \
+    --with-http_gunzip_module --with-http_gzip_static_module \
+    --with-http_random_index_module --with-http_secure_link_module \
+    --with-http_stub_status_module --with-file-aio \
+    --with-cc-opt='-O2 -g -pipe -Wp,-D_FORTIFY_SOURCE=2 -fexceptions -fstack-protector \
+    --param=ssp-buffer-size=4 -m64 -mtune=generic' --without-mail_pop3_module \
+    --without-mail_imap_module --without-mail_smtp_module \
+    --prefix=/home/easemob/apps/opt/nginx-1.7.0 \
+    --conf-path=/home/easemob/apps/config/nginx/nginx.conf \
+    --user=easemob --group=easemob \
+    --pid-path=/home/easemob/apps/var/nginx/nginx.pid \
+    --error-log-path=/home/easemob/apps/log/nginx/error.log \
+    --http-log-path=/home/easemob/apps/log/nginx/access.log \
+    --sbin-path=/home/easemob/apps/opt/nginx-1.7.0/sbin/nginx \
+    --lock-path=/home/easemob/apps/var/nginx/nginx.lock \
+    --http-client-body-temp-path=/home/easemob/apps/var/nginx/client_temp  \
+    --http-proxy-temp-path=/home/easemob/apps/var/nginx/proxy_temp  \
+    --http-fastcgi-temp-path=/home/easemob/apps/var/nginx/fastcgi_temp  \
+    --http-uwsgi-temp-path=/home/easemob/apps/var/nginx/uwsgi_temp  \
+    --http-scgi-temp-path=/home/easemob/apps/var/nginx/scgi_temp
+
+    make
+    make install
+
+    ln -s /home/easemob/apps/opt/nginx-1.7.0 /home/easemob/apps/opt/nginx
+    chown -R easemob.easemob /home/easemob/apps/
+    cp /tmp/nginx-1.7.0/script/nginx /etc/init.d/
+    /etc/init.d/nginx start
+    chkconfig nginx on
+
 
 5. 安装Redis
 -----------------
@@ -406,9 +495,6 @@
       (ejabberd@static-1-13)2>  easy_cluster:join_as_master('ejabberd@static-1-12').
       ok
       两个ctrl+c退出ejabberd console.
-
-4. 安装Cloudcode
-------------------------
 
 
 9. 按装后的初始化工作

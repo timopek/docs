@@ -214,25 +214,143 @@
 2. 安装Cassandra
 -----------------------
 
+在easemob的用户下安装配置cassandra
 
-3. 安装Usergrid
+2.1 创建相关目录
+
+    mkdir /home/easemob/apps/{data,var,log,config}/cassandra -p
+    mkdir /home/easemob/apps/data/cassandra/{data,commitlog,save_caches} -p
+    chown -R easemob.easemob /home/easemob/apps/
+
+2.2 安装依赖的包
+
+    yum install boost-devel jna numactl numactl-devel -y
+
+2.3 下载[cassandra压缩文件](http://archive.apache.org/dist/cassandra/2.0.7/apache-cassandra-2.0.7-bin.tar.gz) 到目录/tmp, 解压缩文件，并移动解压后的目录apache-cassandra-2.0.7到目录/home/easemob/apps/opt。最后创建软链接。
+
+    ln -s /home/easemob/apps/opt/apache-cassandra-2.0.7 /home/easemob/apps/opt/cassandra
+    chown -R easemob.easemob /home/easemob/apps/
+
+2.4 配置cassandra
+
+复制配置文件
+
+    cp /home/easemob/apps/opt/cassandra/cassandra.yaml /home/easemob/apps/config/cassandra
+    cp /home/easemob/apps/opt/cassandra/cassandra-env.sh /home/easemob/apps/config/cassandra
+    cp /home/easemob/apps/opt/cassandra/log4j-server.properties /home/easemob/apps/config/cassandra
+
+修改配置文件/home/easemob/apps/config/cassandra/cassandra.yaml,
+   - 找到"data_file_directories", 把它的下一行改为/home/easemob/apps/data/cassandra/data
+   - 找到"commitlog_directory", 把它后面的路径改为/home/easemob/apps/data/cassandra/commitlog
+   - 找到"saved_caches_directory", 把它后面的路径改为/home/easemob/apps/data/cassandra/saved_caches
+   - 找到"seeds", 把它后面的值改成服务器的域名或IP地址
+   - 找到"listen_address", 把它后面的值改成服务器的域名或IP地址
+   - 找到"rpc_address", 把它后面的值改成服务器的域名或IP地址
+
+修改配置文件/home/easemob/apps/config/cassandra/log4j-server.properties,
+   - 找到"data_file_directories", 把它的下一行改为/home/easemob/apps/data/cassandra/data
+
+把下面的内容写到文件/home/easemob/apps/config/cassandra/cassandra-in.sh
+
+    CASSANDRA_HOME=/home/easemob/apps/opt/cassandra
+    CASSANDRA_CONF=/home/easemob/apps/config/cassandra
+
+    cassandra_bin="$CASSANDRA_HOME/build/classes/main"
+    cassandra_bin="$cassandra_bin:$CASSANDRA_HOME/build/classes/thrift"
+    JAVA_HOME=/usr/local/java/jdk
+
+    CLASSPATH="$CASSANDRA_CONF:$cassandra_bin"
+
+    for jar in "$CASSANDRA_HOME"/lib/*.jar; do
+        CLASSPATH="$CLASSPATH:$jar"
+    done
+ 
+    if [ "$JVM_VENDOR" != "OpenJDK" -o "$JVM_VERSION" \> "1.6.0" ] \
+        || [ "$JVM_VERSION" = "1.6.0" -a "$JVM_PATCH_VERSION" -ge 23 ]
+    then
+        JAVA_AGENT="$JAVA_AGENT -javaagent:$CASSANDRA_HOME/lib/jamm-0.2.5.jar"
+    fi
+
+配置cron任务，把命令`/home/easemob/apps//opt/cassandra/bin/nodetool repair -par`设置成每天执行一次。
+
+2.5 配置supervisord管理cassandra服务
+
+写入配置文件/home/easemob/apps/data/supervisor,
+
+    [program:cassandra]
+    command=/home/easemob/apps/opt/cassandra/bin/cassandra -f -p /home/easemob/apps/var/cassandra/cassandra.pid
+    user=easemob
+    autostart=true
+    autorestart=true
+    startsecs=10
+    startretries=999
+    log_stdout=true
+    log_stderr=true
+    logfile=/home/easemob/apps/log/cassandra/cassandra.out
+    logfile_maxbytes=20MB
+    logfile_backups=10
+    environment=CASSANDRA_INCLUDE="/home/easemob/apps/config/cassandra/cassandra-in.sh"
+
+3. 安装Zookeeper
+-----------------
+
+4. 安装Nginx
+-----------------
+
+5. 安装Redis
 -----------------
 
 
-4. 安装Cloudcode
+6. 安装Usergrid
+-----------------
+
+3.1 下载[tomcat 7.0.54](http://www.easemob.com/downloads/install/apache-tomcat-7.0.54.tar.gz)压缩包并解压到/home/easemob/apps/opt
+
+创建软链接, 然后删除webapps目录下的所有文件
+
+    ln -s /home/easemob/apps/opt/apache-tomcat-7.0.54 /home/easemob/apps/opt/tomcat
+    rm -rf /home/easemob/apps/opt/tomcat
+    chown -R easemob.easemob /home/easemob/apps/
+
+3.2 配置usergrid 
+
+修改配置文件/home/easemob/apps/opt/tomcat/conf/server.xml, 找到localhost都替换为域名或IP地址
+
+修改配置文件/opt/tomcat-usergrid/lib/usergrid-custom.properties,  找到localhost都替换为域名或IP地址
+
+
+3.3 配置supervisord管理usergrid服务
+
+写入配置文件/home/easemob/apps/data/tomcat,
+
+    [program:tomcat]
+    command=/home/easemob/apps/opt/tomcat/bin/catalina.sh run
+    user=easemob
+    autostart=true
+    autorestart=true
+    startsecs=10
+    startretries=999
+    log_stdout=true
+    log_stderr=true
+    logfile=/home/easemob/apps/log/tomcat/tomcat.out
+    logfile_maxbytes=20MB
+    logfile_backups=10
+
+
+
+     5）拷贝属性文件从/tmp/conf/usergrid/usergrid-custom.properties到/opt/tomcat-usergrid/lib/usergrid-custom.properties
+
+     7) 删除目录/opt/tomcat-usergrid/webapps下的所有文件，下载[ROOT.war](http://www.easemob.com/downloads/install/ROOT-latest.war)文件到/opt/tomcat-cloudcode/webapps, 重命名为ROOT.war
+     8) 启动服务tomcat-usergrid并设置开机启动
+     9) 检查:
+     # /etc/init.d/tomcat-usergrid status
+     Tomcat-usergrid is running with pid: 36902
+     # lsof -i :8080
+
+
+7. 安装Cloudcode
 ------------------------
 
-
-5. 安装Nginx
------------------
-
-
-6. 安装Zookeeper
------------------
-
-
-7. 安装Redis
------------------
 
 8. 安装Ejabberd
 ----------------------
@@ -278,7 +396,7 @@
       ERLANG_NODE=ejabberd@static-1-13
    
     5)单机不需要做这个, 下载[easy_cluster.beam](http://www.easemob.com/downloads/ebin.zip)解压后复制到目录/home/easemob/apps/opt/ejabberd-13.12/lib/ejabberd-13.12/ebin/
-    6)在所有服务器上启动ejabberd, 启动后5222端口将被侦听
+    6)在所有服务器上启动ejabberd, 启动后5222端口将被侦听，并把这个命令设置为开机启动。
       # /home/easemob/apps/opt/ejabberd-13.12/bin/ejabberdctl start
     7)把所有服务器做成ejabberd集群，单机不需要做这个。
       # /opt/ejabberd-13.12/bin/ejabberdctl debug
@@ -288,6 +406,9 @@
       (ejabberd@static-1-13)2>  easy_cluster:join_as_master('ejabberd@static-1-12').
       ok
       两个ctrl+c退出ejabberd console.
+
+4. 安装Cloudcode
+------------------------
 
 
 9. 按装后的初始化工作

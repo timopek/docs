@@ -389,23 +389,89 @@
 5. 安装Redis
 -----------------
 
+5.1 创建目录
+
+    mkdir /home/easemob/apps/{data,var,log,config}/redis -p
+    chown -R easemob.easemob /home/easemob/apps/
+
+5.2 下载[redis](http://download.redis.io/redis-stable.tar.gz)到/tmp，并解压
+
+5.3 安装
+
+    cd /tmp/redis-stable
+    make
+    make PREFIX="/home/easemob/apps/opt/redis" install
+
+5.4 配置
+
+复制/tmp/redis-stable/redis.conf到目录/home/easemob/apps/config/redis/redis.conf
+- 找到"# bind 127.0.0.1" 替换为"bind $IP", $IP为域名或IP地址
+- 找到"logfile"开头的那一行，在引号里加上路径"/home/easemob/apps/log/redis/server.log"
+- 找到"dir ./"开头的那一行，替换为"dir /home/easemob/apps/data/redis"
+
+5.5 配置supervisord管理redis
+
+写入配置文件/home/easemob/apps/data/supervisor/redis.conf,
+
+    [program:redis]
+    command = /home/easemob/apps/opt/redis/bin/redis-server /home/easemob/apps/config/redis/redis.conf
+    autostart=true   
+    autorestart=true 
+    startsecs=10
+    user=easemob
+    startretries=999
+    log_stdout=true
+    log_stderr=true
+    logfile=/home/easemob/apps/log/redis/redis-server.out
+    logfile_maxbytes=20MB
+
 
 6. 安装Usergrid
 -----------------
 
 3.1 下载[tomcat 7.0.54](http://www.easemob.com/downloads/install/apache-tomcat-7.0.54.tar.gz)压缩包并解压到/home/easemob/apps/opt
 
-创建软链接, 然后删除webapps目录下的所有文件
+创建软链接, 然后删除webapps目录下的所有文件, 下载[ROOT.war]
 
     ln -s /home/easemob/apps/opt/apache-tomcat-7.0.54 /home/easemob/apps/opt/tomcat
     rm -rf /home/easemob/apps/opt/tomcat
+    wget http://www.easemob.com/downloads/install/ROOT.war -P /home/easemob/apps/opt/tomcat/webapps
     chown -R easemob.easemob /home/easemob/apps/
+
 
 3.2 配置usergrid 
 
 修改配置文件/home/easemob/apps/opt/tomcat/conf/server.xml, 找到localhost都替换为域名或IP地址
 
 修改配置文件/opt/tomcat-usergrid/lib/usergrid-custom.properties,  找到localhost都替换为域名或IP地址
+
+配置usergrid的nginx，替换localhost为IP或域名
+
+    upstream tomcatcluster
+     {
+        server localhost:8080;
+     }
+
+    server
+     {
+        # listen 443 default_server ssl;
+        listen 80;
+        charset UTF-8;
+        server_name localhost;
+        index index.html index.htm index.jsp index.do default.jsp default.do index.php;
+        root  /home/easemob/apps/data/nginx/www;
+        proxy_connect_timeout 1000;
+        proxy_read_timeout 1000;
+        proxy_send_timeout 1000;
+        access_log /home/easemob/apps/log/nginx/usergrid-access.log main;
+        error_log /home/easemob/apps/log/nginx/usergrid-error.log;
+
+        location / {
+            proxy_set_header Host $host;
+            proxy_set_header X-Forwarded-For $remote_addr;
+            proxy_pass http://tomcatcluster;
+          }
+      }
 
 
 3.3 配置supervisord管理usergrid服务
@@ -425,20 +491,38 @@
     logfile_maxbytes=20MB
     logfile_backups=10
 
+3.4 按装后的初始化工作
+-------------------------------
 
-
-     5）拷贝属性文件从/tmp/conf/usergrid/usergrid-custom.properties到/opt/tomcat-usergrid/lib/usergrid-custom.properties
-
-     7) 删除目录/opt/tomcat-usergrid/webapps下的所有文件，下载[ROOT.war](http://www.easemob.com/downloads/install/ROOT-latest.war)文件到/opt/tomcat-cloudcode/webapps, 重命名为ROOT.war
-     8) 启动服务tomcat-usergrid并设置开机启动
-     9) 检查:
-     # /etc/init.d/tomcat-usergrid status
-     Tomcat-usergrid is running with pid: 36902
-     # lsof -i :8080
+初始化数据库, 自行将localhost替换为域名
+    
+    # curl --user "webmaster:1234567890" http://localhost:8080/system/database/setup
+    {
+      "action" : "cassandra setup",
+      "status" : "ok",
+      "timestamp" : 1404545062339,
+      "duration" : 71
+    }
+    # curl --user "webmaster:1234567890" http://localhost:8080/system/superuser/setup
+    {
+       "action" : "superuser setup",
+       "status" : "ok",
+       "timestamp" : 1404545009469,
+       "duration" : 2
+    }
+    
 
 
 7. 安装Cloudcode
 ------------------------
+
+参考usergrid的安装，只需要修改server.xml里的端口80005，8080，8009，不要和usergrid冲突
+
+      <Server port="8005" shutdown="SHUTDOWN"> 
+     <Connector port="8080" protocol="HTTP/1.1"
+               connectionTimeout="20000"
+               redirectPort="8443" />
+      <Connector port="8009" protocol="AJP/1.3" redirectPort="8443" />
 
 
 8. 安装Ejabberd
@@ -497,221 +581,7 @@
       两个ctrl+c退出ejabberd console.
 
 
-9. 按装后的初始化工作
--------------------------------
+9. 启动服务
 
-a. 初始化数据库, 自行将localhost替换为域名
-    
-    # curl --user "webmaster:1234567890" http://localhost:8080/system/database/setup
-    {
-      "action" : "cassandra setup",
-      "status" : "ok",
-      "timestamp" : 1404545062339,
-      "duration" : 71
-    }
-    # curl --user "webmaster:1234567890" http://localhost:8080/system/superuser/setup
-    {
-       "action" : "superuser setup",
-       "status" : "ok",
-       "timestamp" : 1404545009469,
-       "duration" : 2
-    }
-    
-
-10. 功能验证
------------------
-
-
-**以下是旧文档，不用看**
-----------------------------------------------------------------------------------------
-
-
-配置详情
-===============
-
-目前我们有三台机器，
-192.168.1.12
-192.168.1.13
-192.168.1.15
-
-基础配置如下：
-------------------------------------
-
-192.168.1.12  内网主机名: static-1-12
-192.168.1.13  内网主机名: static-1-13
-192.168.1.15  内网主机名: static-1-15
-
-    1) 把下面四行加入/etc/hosts
-    127.0.0.1 cassandra.host
-    192.168.1.12 static-1-12
-    192.168.1.13 static-1-13
-    192.168.1.15 static-1-15
- 
-    2) 安装JRE，版本：1.7.0_51
-    
-    3) 安装前提需要的软件包：
-    epel repo, nodejs, npm, tar, unzip
-    # rpm -ivh http://dl.fedoraproject.org/pub/epel/6/x86_64/epel-release-6-8.noarch.rpm
-    # yum install nodejs npm tar unzip
-
-Cassandra配置如下：
---------------------------------------
-
-192.168.1.12  内网主机名: static-1-12
-192.168.1.13  内网主机名: static-1-13
-192.168.1.15  内网主机名: static-1-15
-
-     1) 添加Datastax Repo文件
-     /etc/yum.repos.d/datastax.repo
-     2) 安装包：
-     jna, dsc20
-     # yum install jna dsc20
-     3) 修改文件/etc/init.d/cassandra的这一行。
-     JAVA_HOME="/usr/java/jre1.7.0_51" 
-     4) 修改文件/etc/cassandra/conf/cassandra.yaml
-     seeds: 三个内网IP
-     listen_address: 本地内网IP
-     rpc_address: 本地内网IP
-     5）启动cassandra服务，并设置开机启动
-     6）三台机器的cassandra和tomcat-usergrid启动后，在192.168.1.12运行命令
-     # /usr/bin/curl --user stliu:1234567890 http://localhost:8080/system/database/setup
-     # /usr/bin/curl --user stliu:1234567890 http://localhost:8080/system/superuser/setup
-     6）检查:
-     # /etc/init.d/cassandra status
-     /usr/java/jre1.7.0_51
-     cassandra (pid  38906) is running...
-     # lsof -i :7199
-     
-Tomcat Usergrid配置如下：
------------------------------------------
-
-192.168.1.12  内网主机名: static-1-12 
-192.168.1.13  内网主机名: static-1-13 
-192.168.1.15  内网主机名: static-1-15 
-
-     1）下载[tomcat 7.0.50](http://www.easemob.com/downloads/install/tomcat.tar.gz)压缩包并解压到/opt/tomcat-usergrid
-        下载[tomcat_conf.tar.gz](http://www.easemob.com/downloads/install/conf/tomcat_conf.tar.gz)到/tmp目录并解压
-     2) 新加系统用户tomcat,无家目录
-     3）设置目录/opt/tomcat-usergrid的用户组为tomcat
-     4) 拷贝启动脚本从/tmp/conf/usergrid/tomcat-usergrid到/etc/init.d/tomcat-usergrid
-     5）拷贝属性文件从/tmp/conf/usergrid/usergrid-custom.properties到/opt/tomcat-usergrid/lib/usergrid-custom.properties
-     6）拷贝配置文件从/tmp/conf/usergrid/server.xml到/opt/tomcat-usergrid/conf/server.xml
-     7) 删除目录/opt/tomcat-usergrid/webapps下的所有文件，下载[ROOT.war](http://www.easemob.com/downloads/install/ROOT-latest.war)文件到/opt/tomcat-cloudcode/webapps, 重命名为ROOT.war
-     8) 启动服务tomcat-usergrid并设置开机启动
-     9) 检查:
-     # /etc/init.d/tomcat-usergrid status
-     Tomcat-usergrid is running with pid: 36902
-     # lsof -i :8080
-
-Tomcat cloudcode配置如下：
------------------------------------------
-
-192.168.1.12  内网主机名: static-1-12
-192.168.1.13  内网主机名: static-1-13
-192.168.1.15  内网主机名: static-1-15
-
-     1）下载[tomcat 7.0.50](http://www.easemob.com/downloads/install/tomcat.tar.gz)压缩包并解压到/opt/tomcat-cloucode
-        下载[tomcat_conf.tar.gz](http://www.easemob.com/downloads/install/conf/tomcat_conf.tar.gz)到/tmp目录并解压
-     2) 新加系统用户tomcat,无家目录
-     3）设置目录/opt/tomcat-cloudcode的用户组为tomcat
-     4) 拷贝启动脚本从/tmp/conf/cloudcode/tomcat-cloudcode到/etc/init.d/tomcat-cloudcode
-     5）拷贝配置文件从/tmp/conf/cloudcode/server.xml到/opt/tomcat-cloudcode/conf/server.xml
-     6) 删除目录/opt/tomcat-cloudcode/webapps下的所有文件，下载[management-latest.war](http://www.easemob.com/downloads/install/management-latest.war)文件到/opt/tomcat-cloudcode/webapps, 并重命名为management.war 
-     7) 启动服务tomcat-cloudcode并设置开机启动
-     8) 检查:
-     # /etc/init.d/tomcat-cloudcode status
-     Tomcat-cloudcode is running with pid: 37259
-     # lsof -i :8081
-
-Redis配置如下：
------------------------------------------
-
-192.168.1.12  内网主机名: static-1-12
-
-    1)安装redis包
-    redis, hiredis, hireds-devel
-    2)修改配置文件/etc/redis.conf
-    bind 192.168.1.12
-    3)启动redis服务
-    /etc/init.d/redis start
-    4)检查
-    # /etc/init.d/redis status
-    # lsof -i :6379
-
-Pushd配置如下：
------------------------------------------
-
-192.168.1.12  内网主机名: static-1-12
-192.168.1.13  内网主机名: static-1-13
-192.168.1.15  内网主机名: static-1-15
-
-     1)下载[Pushd](http://www.easemob.com/downloads/install/pushd-latest.tar.gz)压缩包并解压到/opt/pushd目录
-     2)删除目录/opt/pushd/node_modules
-     3)在目录/opt/pushd目录下运行命令
-     # npm install
-     # npm install pm2 -g
-     4)拷贝配置文件settings.coffee到目录/opt/pushd
-     修改文件中的两行, 192.168.1.12将配置redis服务
-     redis_host: '192.168.1.12'
-     tcp_port: 7894
-     host: 'chat.camito.cn'
-     5)在redis服务启动后，启动pm2进程, 并将下面的命令加入/etc/rc.local
-     # /usr/bin/pm2 start /opt/pushd/server.js -i max -f
-     6)检查：
-     # ps aux | grep pm2
-     # lsof -i :7894
-
-Nginx, php-fpm 和 upload配置如下：
------------------------------------------
-
-192.168.1.15  内网主机名: static-1-15
-
-    1)安装nginx包
-      pcre, pcre-devel, openssl-devel
-      [nginx-1.5.8-1.el6.ngx.x86_64.rpm](http://www.easemob.com/downloads/install/nginx-1.5.8-1.el6.ngx.x86_64.rpm)
-    2)删除文件
-      /etc/nginx/conf.d/default.conf
-      /etc/nginx/conf.d/example_ssl.conf
-    3）拷贝文件到
-      /etc/nginx/nginx.conf
-      /etc/nginx/conf.d/upload.conf
-      这个文件里有upload的域名
-      server_name upload.camito.cn;
-    4) 安装php
-       php, php-fpm
-    5) 修改文件/etc/php.ini
-       cgi.fix_pathinfo=0
-    6）拷贝文件到
-       /etc/php-fpm.d/www.conf
-    7) 启动php-fpm并设置开机启动
-    8) 创建目录/opt/web/www, 设置用户组为nginx
-    9) 下载[easemob-php.zip](http://www.easemob.com/downloads/install/easemob-php-latest.zip)并解压到/opt/web/www/html, 设置用户组为nginx
-    10) 创建目录/opt/web/storage， 设置用户组为nginx
-    11) 启动nginx
-    12) 检查：
-    # /etc/init.d/nginx status
-    # lsof -i :9092
-
-
-负载均衡：
------------------------------------------
-
-需要给ejabberd的集群配置TCP协议的负载均衡，建议使用LVS，轮询访问三台服务的5222端口.
-
-需要配置nginx代理轮询访问三台服务的8080，8081，7894端口。
-
-     
-域名：
------------------------------------------
-
-需要配置3个域名给nginx服务器代理访问相应的转发端口
-* api.camito.cn对应转发端口8080
-* cloudcode.camito.cn对应转发端口8081
-* pushd.camito.cn对应转发端口7894
-
-需要配置1个域名给LVS的虚拟IP地址
-* chat.camito.cn
-
-需要配置1个域名给192.168.1.15的nginx服务器
-* upload.camito.cn
-
+    /etc/init.d/nginx restart
+    /etc/init.d/supervisor restart

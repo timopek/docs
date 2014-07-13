@@ -8,7 +8,9 @@
     fdisk -S 56 /dev/xvdb << EOF
     n
     p
-    1    
+    1   
+
+ 
     wq
     EOF
 
@@ -27,17 +29,17 @@
     
     groupadd easemob
     useradd -g easemob -d /home/easemob easemob
-    mkdir apps
-    chown -R easemob.easemob /home/easemob/apps
     passwd easemob
+    mkdir /data/apps -p
+    chown -R easemob.easemob /data
 
 在文件/etc/fstab添加挂载点
     
-    /dev/data/apps	     /home/easemob/apps   ext4	     defaults		   0 0
+    /dev/data/apps	     /data   ext4	     defaults		   0 0
     
 挂载硬盘
     
     mount -a
-    chown -R easemob.easemob /home/easemob/apps
+    ln -s /data/apps /home/easemob/apps
 
 

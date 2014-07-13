@@ -20,9 +20,9 @@
     pvcreate /dev/xvdb1
     #create VG
     vgcreate data /dev/xvdb1
-    #Check the totle PE of the VG
+    #Check the total PE of the VG
     vgdisplay data | grep "Total PE"
-    #Create LV with the totle size. 127998 is from the result of the above command
+    #Create LV with the total size. 127998 is from the result of the above command
     lvcreate -l 127998 data -n apps
     
 给逻辑卷apps创建文件系统ext4

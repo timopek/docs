@@ -1,7 +1,7 @@
 ##7. 数据库初始化
 
 1. 初始化数据库
-    
+        
     curl --user "webmaster:1234567890" http://10.0.19.17:8080/system/database/setup    
     Response:
     {
@@ -19,6 +19,7 @@
        "timestamp" : 1404892513166,
        "duration" : 3
     }
+    
 
 ##8. usergrid初始化
 

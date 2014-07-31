@@ -90,6 +90,10 @@
     cassandra.keyspace.strategy=org.apache.cassandra.locator.SimpleStrategy
     
     3. 再次运行创建组织的命令
+
+激活账号
+
+curl -X PUT -i -H "Authorization: Bearer YWMt39RfMMOqEeKYE_GW7tu81AAAAT71lGijyjG4VUIC2AwZGzUjVbPp_4qRD5k" "https://a1.easemob.com/easemob-demo/chatdemo/users" -d '{"activated":true,"":true}'
 	 
 2 用#1创建的org admin账号登陆。
     

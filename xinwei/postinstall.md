@@ -1,8 +1,8 @@
 ##7. 数据库初始化
+
 1. 初始化数据库
     
-    curl --user "webmaster:1234567890" http://10.0.19.17:8080/system/database/setup
-    
+    curl --user "webmaster:1234567890" http://10.0.19.17:8080/system/database/setup    
     Response:
     {
       "action" : "cassandra setup",
@@ -12,7 +12,6 @@
     }
     
     curl --user "webmaster:1234567890" http://10.0.19.17:8080/system/superuser/setup
-    
     Response:
     {
        "action" : "superuser setup",

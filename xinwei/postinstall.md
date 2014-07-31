@@ -1,8 +1,8 @@
 ##7. 数据库初始化
 1. 初始化数据库
-
-url --user "webmaster:1234567890" http://10.0.19.17:8080/system/database/setup
-
+    
+    curl --user "webmaster:1234567890" http://10.0.19.17:8080/system/database/setup
+    
 Response:
 {
   "action" : "cassandra setup",
@@ -10,9 +10,9 @@ Response:
   "timestamp" : 1404892488508,
   "duration" : 119
 }
-
-curl --user "webmaster:1234567890" http://10.0.19.17:8080/system/superuser/setup
-
+    
+    curl --user "webmaster:1234567890" http://10.0.19.17:8080/system/superuser/setup
+    
 Response:
 {
   "action" : "superuser setup",
@@ -24,8 +24,9 @@ Response:
 ##8. usergrid初始化
 
 1 创建“weiquan" org，并同时为这个org创建一个管理员。管理员的用户名为"admin"， 其注册邮件地址是admin@easemob.com (用于找回密码)，密码为"1234567890".   
-curl -X POST -i  "http://localhost:8080/management/organizations" -d '{"organization":"weiquan","username":"admin","name":"admin","email":"admin@easemob.com","password":"1234567890"}'
 
+    curl -X POST -i  "http://localhost:8080/management/organizations" -d '{"organization":"weiquan","username":"admin","name":"admin","email":"admin@easemob.com","password":"1234567890"}'
+    
 Response:
 HTTP/1.1 200 OK
 Server: Apache-Coyote/1.1
@@ -79,14 +80,14 @@ Connection: close
 
 解决方案：
      1. stop掉cassandra和tomcat     supervisorctl start tomcat supervisorctl start cassandra
-     1 . 先删除 /home/easemob/data/cassandra/*
+        先删除 /home/easemob/data/cassandra/*
      2.  修改 /home/easemob/apps/opt/tomcat/lib/usergrid-custom.properties， 下面的配置是单机部署的配置。
-         
-		 cassandra.readcl=ONE    
-	     cassandra.writecl=ONE
-		 
-         cassandra.keyspace.replication=1
-		 cassandra.keyspace.strategy=org.apache.cassandra.locator.SimpleStrategy
+
+    cassandra.readcl=ONE    
+    cassandra.writecl=ONE
+    cassandra.keyspace.replication=1
+    cassandra.keyspace.strategy=org.apache.cassandra.locator.SimpleStrategy
+    
      3. 再次运行创建组织的命令
 	 
 2 用#1创建的org admin账号登陆。

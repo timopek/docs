@@ -188,10 +188,10 @@ output {
 ```
 logstash-indexer.conf文件里使用了两种类型的plugin, input和output。
 * input plugin
-  * kafka: 指定zookeeper的连接字符串"ops-ali-hangzhou-zk1:2181"和Kafka topic "kefu_webapp_error"，增加tag "kefu_webapp_error"
+  * kafka: 指定zookeeper的连接字符串"zk1:2181"和Kafka topic "kefu_webapp_error"，增加tag "kefu_webapp_error"
 * output plugin
   * stdout: 把日志写到标准输出，如果logstash服务是以service运行的，日志写入/var/log/logstash/logstash.stdout。
-  * elasticsearch: 把带有"kefu_webapp_error" tag的日志写入"ops-ali-hangzhou-logindex:9200"的index "kefu_webapp_error-%{+YYYY.MM.dd}"，以http的协议连接elasticsearch。
+  * elasticsearch: 把带有"kefu_webapp_error" tag的日志写入"logindex:9200"的index "kefu_webapp_error-%{+YYYY.MM.dd}"，以http的协议连接elasticsearch。
 
 在logindex服务器上启动logstash服务后，kafka集群的topic kefu_webapp_error里的日志将被传
 送到elasticsearch集群里，保存在以kefu_webapp_error为前缀命名的index里。
@@ -266,7 +266,7 @@ http.jsonp.enable: True
 }
 
 # curl localhost:9200/_cat/nodes?pretty
-logindex      10.16.251.166 14 46 1.52 - m ela-logindex
+logindex      10.16.251.166 14 46 1.52 - m logindex
 ela-data3     10.16.120.77  23 72 0.00 d m ela-data3
 ela-data2     10.16.112.227 28 73 0.00 d * ela-data2
 ela-data1     10.16.117.74  20 73 0.00 d m ela-data1

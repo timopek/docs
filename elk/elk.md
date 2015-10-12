@@ -222,7 +222,8 @@ output {
       protocol => "http"
     }
   }
-}```
+}
+```
 logstash-indexer.conf文件里使用了两种类型的plugin, input和output。
 * input plugin
   * kafka: 指定zookeeper的连接字符串"ops-ali-hangzhou-zk1:2181"和Kafka topic "kefu_webapp_error"，增加tag "kefu_webapp_error"

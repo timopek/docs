@@ -31,7 +31,11 @@ org.jivesoftware.smack.sasl.SASLErrorException: SASLError using PLAIN: not-autho
 
 * Logstash
 
+  Logstash是一种具备实时处理流式数据能力的开源数据收集引擎。
+
 * Kibana
+
+  Kibana是分析和可视化保存在Elasticsearch里的数据的开源平台。
 
 ## 平台架构
 

@@ -324,7 +324,7 @@ server {
 在Discovery页面下可以看到收集到的日志了。
 ![kibana_show](images/kibana02.png "kibana show")
 
-###关于作者
+##关于作者
 
 窦中强
 环信运维团队devops工程师。

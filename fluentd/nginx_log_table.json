@@ -1,0 +1,212 @@
+{
+  "title": "nginx_log_table",
+  "services": {
+    "query": {
+      "list": {
+        "0": {
+          "query": "nginx_log:nginx_usergrid_log",
+          "alias": "Usergrid Log",
+          "color": "#7EB26D",
+          "id": 0,
+          "pin": true,
+          "type": "lucene",
+          "enable": true
+        },
+        "1": {
+          "id": 1,
+          "color": "#70DBED",
+          "alias": "ebs_ali_beijing_1",
+          "pin": true,
+          "type": "lucene",
+          "enable": true,
+          "query": "nginx_log:nginx_usergrid_log AND logfrom:ebs_ali_beijing_1"
+        },
+        "2": {
+          "id": 2,
+          "color": "#7EB26D",
+          "alias": "ebs_ali_beijing_2",
+          "pin": true,
+          "type": "lucene",
+          "enable": true,
+          "query": "nginx_log:nginx_usergrid_log AND logfrom:ebs_ali_beijing_2"
+        },
+        "3": {
+          "id": 3,
+          "color": "#EF843C",
+          "alias": "ebs_ali_beijing_3",
+          "pin": true,
+          "type": "lucene",
+          "enable": true,
+          "query": "nginx_log:nginx_usergrid_log AND logfrom:ebs_ali_beijing_3"
+        },
+        "4": {
+          "id": 4,
+          "color": "#7EB26D",
+          "alias": "Usergrid Access",
+          "pin": true,
+          "type": "lucene",
+          "enable": true,
+          "query": "nginx_log:nginx_usergrid_log AND NOT http_return:error"
+        },
+        "5": {
+          "id": 5,
+          "color": "#E24D42",
+          "alias": "Usergrid Error",
+          "pin": true,
+          "type": "lucene",
+          "enable": true,
+          "query": "nginx_log:nginx_usergrid_log AND http_return:error"
+        },
+        "6": {
+          "id": 6,
+          "color": "#BA43A9",
+          "alias": "Token+200+iphone+post",
+          "pin": true,
+          "type": "lucene",
+          "enable": true,
+          "query": "type_name: nginx AND method: POST AND nginx_code: 200 AND path: token AND agent: iphone"
+        },
+        "7": {
+          "id": 7,
+          "color": "#705DA0",
+          "alias": "nginx 200",
+          "pin": true,
+          "type": "lucene",
+          "enable": true,
+          "query": "nginx_code:200"
+        },
+        "8": {
+          "id": 8,
+          "color": "#508642",
+          "alias": "agent iphone",
+          "pin": true,
+          "type": "lucene",
+          "enable": true,
+          "query": "agent: iphone"
+        },
+        "9": {
+          "id": 9,
+          "color": "#CCA300",
+          "alias": "Path Token",
+          "pin": true,
+          "type": "lucene",
+          "enable": true,
+          "query": "path: token"
+        }
+      },
+      "ids": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9
+      ]
+    },
+    "filter": {
+      "list": {
+        "0": {
+          "type": "time",
+          "field": "@timestamp",
+          "from": "now-1h",
+          "to": "now",
+          "mandate": "must",
+          "active": true,
+          "alias": "",
+          "id": 0
+        }
+      },
+      "ids": [
+        0
+      ]
+    }
+  },
+    
+	"title": "Nginx Table",
+    "height": "1000px",
+    "editable": true,
+    "collapse": false,
+    "collapsable": true,
+    "panels": [
+      {
+        "error": false,
+        "span": 6,
+        "editable": true,
+        "type": "table",
+        "loadingEditor": false,
+        "size": 100,
+        "pages": 5,
+        "offset": 0,
+        "sort": [
+          "_score",
+          "desc"
+        ],
+        "overflow": "height",
+        "fields": [],
+        "highlight": [],
+        "sortable": true,
+        "header": true,
+        "paging": true,
+        "field_list": false,
+        "all_fields": false,
+        "trimFactor": 3000,
+        "localTime": false,
+        "timeField": "@timestamp",
+        "spyable": true,
+        "queries": {
+          "mode": "selected",
+          "ids": [
+            4
+          ]
+        },
+        "style": {
+          "font-size": "9pt"
+        },
+        "normTimes": true,
+        "title": "Usergrid Access Log"
+      },
+      {
+        "error": false,
+        "span": 6,
+        "editable": true,
+        "type": "table",
+        "loadingEditor": false,
+        "size": 100,
+        "pages": 5,
+        "offset": 0,
+        "sort": [
+          "_score",
+          "desc"
+        ],
+        "overflow": "min-height",
+        "fields": [],
+        "highlight": [],
+        "sortable": true,
+        "header": true,
+        "paging": true,
+        "field_list": false,
+        "all_fields": false,
+        "trimFactor": 300,
+        "localTime": false,
+        "timeField": "@timestamp",
+        "spyable": true,
+        "queries": {
+          "mode": "selected",
+          "ids": [
+            5
+          ]
+        },
+        "style": {
+          "font-size": "9pt"
+        },
+        "normTimes": true,
+        "title": "Usergrid Error Log"
+      }
+    ],
+    "notice": false
+  },
+}

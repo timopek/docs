@@ -27,6 +27,8 @@ Install fluentd
     # chown -R easemob.easemob /var/easemob/fluentd
     # cd /var/easemob/fluentd
     # mkdir cassandra ejabberd kafka nginx tomcat
+	
+	# gem install fluent-plugin-record-modifier
 
 Configure fluentd in supervisor
 -------------------------------
